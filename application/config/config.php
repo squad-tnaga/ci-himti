@@ -23,7 +23,9 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 | a PHP script and you can easily do that on your own.
 |
 */
-$config['base_url'] = '';
+$servername = filter_input(INPUT_SERVER,"SERVER_NAME");
+$port = filter_input(INPUT_SERVER,"SERVER_PORT");
+$config['base_url'] = 'http://'.$servername.':'.$port.'/ci-himti/';
 
 /*
 |--------------------------------------------------------------------------
@@ -260,7 +262,7 @@ $config['log_file_extension'] = '';
 | IMPORTANT: This MUST be an integer (no quotes) and you MUST use octal
 |            integer notation (i.e. 0700, 0644, etc.)
 */
-$config['log_file_permissions'] = 0644;
+$config['log_file_permissions'] = 0700;
 
 /*
 |--------------------------------------------------------------------------
