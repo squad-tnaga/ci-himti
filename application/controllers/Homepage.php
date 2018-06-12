@@ -187,7 +187,7 @@ class Homepage extends CI_Controller {
 		$this->load->model('User_auth');
 		$data=$this->User_auth->wereuser($No);
 		$d= array('da'=>$data);
-
+		$d['fullpathimg'] = base_url('assets/image/userimg/'.$d['da'][0]['gambar']);
 
 		$this->load->view('template/header1');
 		$this->load->view('template/header3');
@@ -205,7 +205,7 @@ class Homepage extends CI_Controller {
 	}
 
 //halaman edit profil
-	function editmy()
+	function editmy($param=null)
 	{
 
 	if($this->session->userdata('logged')){
@@ -215,6 +215,7 @@ class Homepage extends CI_Controller {
 		$this->load->model('User_auth');
 		$data=$this->User_auth->wereuser($_SESSION['id']);
 		$d= array('da'=>$data);
+		$d['error'] = $param;
 
 		$this->load->view('template/header1');
 		$this->load->view('template/header3');
@@ -232,6 +233,37 @@ class Homepage extends CI_Controller {
 		
 	}
 
+	function uploadphoto()
+	{
+		$config['upload_path']=  './uploads/';
+		$config['allowed_types']= 'jpg|jpeg|gif|png';
+		//$config['file_name']= 'poto';
+		$config['encrypt_name'] = TRUE;
+		$config['max_size']='1024';
+		$config['max_width']='1024';
+		$config['max_height']='1024';
+
+		$this->load->library('upload',$config);
+
+		if(! $this->upload->do_upload('poto')):
+			$success = false;
+			$msg = 'Error : '.$this->upload->display_errors('','');
+			$type = 'warning';
+			$src = 'default.jpg';
+		else:
+			$success = true;
+			$msg = 'Upload Success';
+			$type = 'success';
+			$src = $this->upload->data('file_name');
+		endif;
+		$json = array(
+		'success' => $success,
+		'msg' => $msg,
+		'classtype' => $type,
+		'src' => $src);
+		header('Content-Type:application/json',true);
+		echo json_encode($json);
+	}
 //fungsi edit profil
 	function editmyproc()
 	{		
@@ -249,26 +281,31 @@ class Homepage extends CI_Controller {
 		$this->form_validation->set_rules('emailmhs', 'Email', 'required');
 		$this->form_validation->set_rules('sosmed', 'sosial media', 'required');
 		
+		//$this->form_validation->set_rules('imgfilename','Foto','required');
 
-		if($this->form_validation->run()){
+		if($this->form_validation->run())
+		{
 			
-			$poto=$this->input->post('poto');
-			$config=array();
-			$config['upload_path']=  base_url('assets/image/');
-			$config['allowed_types']= 'jpg|jpeg|gif|png';
-			//$config['file_name']= 'poto';
-			$config['max_size']='1024';
-			$config['max_width']='1024';
-			$config['max_height']='1024';
-			$this->load->library('upload',$config);
-			//$this->upload->initialize($config);
-			if(!$this->upload->do_upload($poto)){
-				redirect(base_url());
-			}
-			else{
-				$data=$this->upload->data();
-				redirect(site_url('Homepage/profil'));
-		}
+			// $poto=$this->input->post('poto');
+			// $config=array();
+			// $config['upload_path']=  base_url('assets/image/');
+			// $config['allowed_types']= 'jpg|jpeg|gif|png';
+			// //$config['file_name']= 'poto';
+			// $config['max_size']='1024';
+			// $config['max_width']='1024';
+			// $config['max_height']='1024';
+			// $this->load->library('upload',$config);
+			// //$this->upload->initialize($config);
+			// if(!$this->upload->do_upload($poto))
+			// {
+			// 	$param = array('error'=>$this->upload->display_errors());
+			// 	redirect(site_url('Homepage/editmy/'.$param));
+			// }
+			// else
+			// {
+			// 	$data=$this->upload->data();
+			// 	redirect(site_url('Homepage/profil'));
+			// }
 
 			 $this->load->model('User_auth');
 			$id=$this->input->post('id');
@@ -276,9 +313,9 @@ class Homepage extends CI_Controller {
 			$use=$this->input->post('userna');
 			$nam=$this->input->post('nama');
 			$pasl=$this->input->post('passlama');
-				$pl=hash("sha256",$pasl);
+			$pl=hash("sha256",$pasl);
 			$pasb=$this->input->post('passwordbaru');
-				$pb=hash("sha256",$pasb);
+			$pb=hash("sha256",$pasb);
 			$jk=$this->input->post('jkelamin');
 			$ang=$this->input->post('angkatan');
 			$tgl=$this->input->post('tgllahir');
@@ -288,34 +325,45 @@ class Homepage extends CI_Controller {
 			$emailp=$this->input->post('email');
 			$emailm=$this->input->post('emailmhs');
 			$sos=$this->input->post('sosmed');
+			$imgfilename=$this->input->post('imgfilename');
 			//pengecekan jika ingin ganti password 			
-			if($pasl==NULL||$pasb==NULL){
-		
-		$this->User_auth->updatedata1($id,$nim,$use,null,$nam,$jk,$ang,$tgl,$pekerjaan,$nohp,$alamat,$emailp,$emailm,$sos);
-		redirect(site_url('Homepage/MyProfile'));
-		}
-		elseif($pasl!=NULL&&$pasb!=NULL){
-			$data=$this->User_auth->cekuspas(null,$pl,$id);
+			if($pasl==NULL||$pasb==NULL)
+			{
+				$this->User_auth->updatedata1($id,$nim,$use,null,$nam,$jk,$ang,$tgl,$pekerjaan,$nohp,$alamat,$emailp,$emailm,$sos,$imgfilename);
+				$olddir = FCPATH.'uploads/';
+				$newdir = FCPATH.'assets/image/userimg/';
+				if(rename($olddir.$imgfilename,$newdir.$imgfilename)):
 
-			if($data==1){
-				$this->User_auth->updatedata1($id,$nim,$use,$pb,$nam,$jk,$ang,$tgl,$pekerjaan,$nohp,$alamat,$emailp,$emailm,$sos);
-				echo "<script type='text/javascript'>alert('Update dan ubah password berhasil!');
-				    window.location.href='MyProfile';</script>";
+				else:
+					echo '<script type="text/javascript">alert("error");</script>';
+				endif;
+				redirect(site_url('Homepage/MyProfile'));
 			}
-			else{
+			elseif($pasl!=NULL&&$pasb!=NULL)
+			{
+				$data=$this->User_auth->cekuspas(null,$pl,$id);
+
+				if($data==1)
+				{
+					$this->User_auth->updatedata1($id,$nim,$use,$pb,$nam,$jk,$ang,$tgl,$pekerjaan,$nohp,$alamat,$emailp,$emailm,$sos);
+					echo "<script type='text/javascript'>alert('Update dan ubah password berhasil!');
+					    window.location.href='MyProfile';</script>";
+				}
+				else
+				{
 				    echo "<script type='text/javascript'>alert('Password lama tidak cocok, update data GAGAL!');
 				   window.location.href='MyProfile'; </script>";
 
 				}
-
 			}
 		}
 		//jika tidak lengkap
-		else{
-				    echo "<script type='text/javascript'>alert('Harap isi LENGKAP!');
-				    window.location.href='editmy';</script>";
-				}
+		else
+		{
+		    echo "<script type='text/javascript'>alert('Harap isi LENGKAP!');
+		    window.location.href='editmy';</script>";
 		}
+	}
 	
 
 
@@ -366,10 +414,12 @@ class Homepage extends CI_Controller {
 	public function infoprodi()
 	{
 		$this->load->view('template/header1');
-		if($this->session->userdata('logged')){
-		$this->load->view('template/header3');}
-		else{
-		$this->load->view('template/header2');
+		if($this->session->userdata('logged'))
+		{
+			$this->load->view('template/header3');}
+		else
+		{
+			$this->load->view('template/header2');
 		}
 		$this->navloader('Info Prodi');
 		$this->load->view('template/breadcrumb');

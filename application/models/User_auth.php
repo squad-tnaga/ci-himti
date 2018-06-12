@@ -11,19 +11,22 @@
 
 		function cekuspas($user,$pass,$id)
 		{
-			if($user!=NULL&&$pass!=NULL&&$id==NULL){
-		$this->db->from($this->table);
-		$this->db->where('username', $user);
-		$this->db->where('pw', $pass);
-		$query = $this->db->get();
-		}
-			if($user==NULL&&$pass!=NULL&&$id!=NULL){
-		$this->db->from($this->table);
-		$this->db->where('id', $id);
-		$this->db->where('pw', $pass);
-		$query = $this->db->get();
-		}
-		return $query->result_array();
+			
+			if($user!=NULL&&$pass!=NULL&&$id==NULL)
+			{
+				$this->db->from($this->table);
+				$this->db->where('username', $user);
+				$this->db->where('pw', $pass);
+				//$query = $this->db->get();
+			}
+			if($user==NULL&&$pass!=NULL&&$id!=NULL)
+			{
+				$this->db->from($this->table);
+				$this->db->where('id', $id);
+				$this->db->where('pw', $pass);
+			}
+			$query = $this->db->get();
+			return $query->num_rows();
 		}
 
 
@@ -151,7 +154,7 @@
 
 
 
-function updatedata1($id,$nim,$use,$pasb,$nam,$jk,$ang,$tgl,$pekerjaan,$nohp,$alamat,$emailp,$emailm,$sos)//update dari halaman myprofile
+function updatedata1($id,$nim,$use,$pasb,$nam,$jk,$ang,$tgl,$pekerjaan,$nohp,$alamat,$emailp,$emailm,$sos,$gambar)//update dari halaman myprofile
 		{
 			if($pasb!=null){
 		$data=array(
@@ -177,13 +180,14 @@ function updatedata1($id,$nim,$use,$pasb,$nam,$jk,$ang,$tgl,$pekerjaan,$nohp,$al
 			'alamat'=>$alamat,
 			'email'=>$emailp,
 			'email_mhs'=>$emailm,
-			'sosmed'=>$sos
+			'sosmed'=>$sos,
+			'gambar'=>$gambar
 
 			);
 		$this->db->where('id_user',$id);
 		$this->db->update('mahasiswa',$datas);
 		
-		return;
+		return true;
 		}
 
 		function deletedata($id)
