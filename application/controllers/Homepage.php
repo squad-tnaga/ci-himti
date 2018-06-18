@@ -232,7 +232,7 @@ class Homepage extends CI_Controller {
 		}
 		
 	}
-
+	
 	function uploadphoto()
 	{
 		$config['upload_path']=  './uploads/';
